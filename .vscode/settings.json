@@ -1,0 +1,11 @@
+{
+  "terminal.integrated.env.osx": {
+    "PATH": "/Users/radex/.platformio/penv/bin:/Users/radex/.platformio/penv:/Users/radex/.rbenv/shims:/Users/radex/.opam/system/bin:/usr/local/opt/icu4c/sbin:/usr/local/opt/icu4c/bin:/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/Users/radex/Library/Android/sdk/tools:/Users/radex/Library/Android/sdk/platform-tools:/Users/radex/.noz/bin",
+    "PLATFORMIO_CALLER": "vscode"
+  },
+
+  "[cpp]": {
+    "editor.formatOnSave": false,
+  },
+
+}
