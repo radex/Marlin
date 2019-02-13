@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (C) 2016 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
@@ -19,9 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
-#ifndef THERMISTORS_H_
-#define THERMISTORS_H_
+#pragma once
 
 #include "../../inc/MarlinConfig.h"
 
@@ -36,9 +34,9 @@
 // a=3.9083E-3, b=-5.775E-7
 #define PtA 3.9083E-3
 #define PtB -5.775E-7
-#define PtRt(T,R0) ((R0)*(1.0+(PtA)*(T)+(PtB)*(T)*(T)))
-#define PtAdVal(T,R0,Rup) (short)(1024/(Rup/PtRt(T,R0)+1))
-#define PtLine(T,R0,Rup) { OV(PtAdVal(T,R0,Rup)), T },
+#define PtRt(T,R0) ((R0) * (1.0 + (PtA) * (T) + (PtB) * (T) * (T)))
+#define PtAdVal(T,R0,Rup) (short)(1024 / (Rup / PtRt(T, R0) + 1))
+#define PtLine(T,R0,Rup) { OV(PtAdVal(T, R0, Rup)), T }
 
 #if ANY_THERMISTOR_IS(1) // beta25 = 4092 K, R25 = 100 kOhm, Pull-up = 4.7 kOhm, "EPCOS"
   #include "thermistor_1.h"
@@ -99,6 +97,9 @@
 #endif
 #if ANY_THERMISTOR_IS(60) // beta25 = 3950 K, R25 = 100 kOhm, Pull-up = 4.7 kOhm, "Maker's Tool Works Kapton Bed"
   #include "thermistor_60.h"
+#endif
+#if ANY_THERMISTOR_IS(61) // beta25 = 3950 K, R25 = 100 kOhm, Pull-up = 4.7 kOhm, "Formbot 350°C Thermistor"
+  #include "thermistor_61.h"
 #endif
 #if ANY_THERMISTOR_IS(66) // beta25 = 4500 K, R25 = 2.5 MOhm, Pull-up = 4.7 kOhm, "DyzeDesign 500 °C Thermistor"
   #include "thermistor_66.h"
@@ -276,5 +277,3 @@ static_assert(HEATER_0_TEMPTABLE_LEN < 256 && HEATER_1_TEMPTABLE_LEN < 256 && HE
     #define HEATER_CHAMBER_RAW_LO_TEMP 0
   #endif
 #endif
-
-#endif // THERMISTORS_H_

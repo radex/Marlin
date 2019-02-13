@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (C) 2016 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
@@ -27,7 +27,7 @@
 #include "../module/stepper_indirection.h"
 #include "../module/temperature.h"
 
-uint8_t controllerFanSpeed;
+uint8_t controllerfan_speed;
 
 void controllerfan_update() {
   static millis_t lastMotorOn = 0, // Last time a motor was turned on
@@ -75,7 +75,7 @@ void controllerfan_update() {
 
     // Fan off if no steppers have been enabled for CONTROLLERFAN_SECS seconds
     uint8_t speed = (!lastMotorOn || ELAPSED(ms, lastMotorOn + (CONTROLLERFAN_SECS) * 1000UL)) ? 0 : CONTROLLERFAN_SPEED;
-    controllerFanSpeed = speed;
+    controllerfan_speed = speed;
 
     // allows digital or PWM fan output to be used (see M42 handling)
     WRITE(CONTROLLER_FAN_PIN, speed);

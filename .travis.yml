@@ -17,8 +17,8 @@ cache:
 
 env:
   - TEST_PLATFORM="megaatmega2560"
-  - TEST_PLATFORM="LPC1768"
   - TEST_PLATFORM="DUE"
+  - TEST_PLATFORM="LPC1768"
   - TEST_PLATFORM="STM32F1"
   - TEST_PLATFORM="teensy35"
 
@@ -29,9 +29,8 @@ before_install:
   #
   # Publish the buildroot script folder
   - chmod +x ${TRAVIS_BUILD_DIR}/buildroot/bin/*
-  - export PATH=${TRAVIS_BUILD_DIR}/buildroot/bin/:${PATH}
   - chmod +x ${TRAVIS_BUILD_DIR}/buildroot/share/tests/*
-  - export PATH=${TRAVIS_BUILD_DIR}/buildroot/share/tests/:${PATH}
+  - export PATH=${TRAVIS_BUILD_DIR}/buildroot/bin/:${TRAVIS_BUILD_DIR}/buildroot/share/tests/:${PATH}
 
 install:
   #- pip install -U platformio
@@ -49,4 +48,4 @@ before_script:
   - cat ${TRAVIS_BUILD_DIR}/Marlin/src/inc/_Version.h
   #
 script:
-  - start_tests ${TRAVIS_BUILD_DIR} ${TEST_PLATFORM}
+  - run_tests ${TRAVIS_BUILD_DIR} ${TEST_PLATFORM}

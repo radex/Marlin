@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (C) 2016 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
@@ -27,3 +27,9 @@
 #define BOARD_NAME "Ender-4"
 
 #include "pins_RAMPS.h"
+
+// The board only has one controllable fan connector, the others are just plain 12V connectors
+// in the default configuration, this is used to control the brightness of the LED band
+// hotend and controller fan are therefore always-on
+#define ENDER4_FAN_PIN RAMPS_D9_PIN
+#undef FAN_PIN

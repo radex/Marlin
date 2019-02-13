@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (C) 2016 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
@@ -19,14 +19,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+#pragma once
 
 /**
  * Conditionals_post.h
  * Defines that depend on configuration but are not editable.
  */
-
-#ifndef CONDITIONALS_POST_H
-#define CONDITIONALS_POST_H
 
 #define AVR_ATmega2560_FAMILY_PLUS_70 ( \
      MB(BQ_ZUM_MEGA_3D)                 \
@@ -44,10 +42,6 @@
   #undef NOT_A_PIN    // Override Teensyduino legacy CapSense define work-around
   #define NOT_A_PIN 0 // For PINS_DEBUGGING
 #endif
-
-#define IS_SCARA (ENABLED(MORGAN_SCARA) || ENABLED(MAKERARM_SCARA))
-#define IS_KINEMATIC (ENABLED(DELTA) || IS_SCARA)
-#define IS_CARTESIAN !IS_KINEMATIC
 
 #define HAS_CLASSIC_JERK (IS_KINEMATIC || DISABLED(JUNCTION_DEVIATION))
 
@@ -151,7 +145,7 @@
   #if ENABLED(DELTA)
     #define X_HOME_POS 0
   #else
-    #define X_HOME_POS ((X_BED_SIZE) * (X_HOME_DIR) * 0.5)
+    #define X_HOME_POS (X_HOME_DIR < 0 ? X_MIN_POS : X_MAX_POS)
   #endif
 #else
   #if ENABLED(DELTA)
@@ -167,7 +161,7 @@
   #if ENABLED(DELTA)
     #define Y_HOME_POS 0
   #else
-    #define Y_HOME_POS ((Y_BED_SIZE) * (Y_HOME_DIR) * 0.5)
+    #define Y_HOME_POS (Y_HOME_DIR < 0 ? Y_MIN_POS : Y_MAX_POS)
   #endif
 #else
   #if ENABLED(DELTA)
@@ -236,30 +230,10 @@
   #define MAX_AUTORETRACT 99
 #endif
 
-// MS1 MS2 Stepper Driver Microstepping mode table
-#define MICROSTEP1 LOW,LOW
-#if ENABLED(HEROIC_STEPPER_DRIVERS)
-  #define MICROSTEP128 LOW,HIGH
-#else
-  #define MICROSTEP2 HIGH,LOW
-  #define MICROSTEP4 LOW,HIGH
-#endif
-#define MICROSTEP8 HIGH,HIGH
-#ifdef __SAM3X8E__
-  #if MB(ALLIGATOR)
-    #define MICROSTEP16 LOW,LOW
-    #define MICROSTEP32 HIGH,HIGH
-  #else
-    #define MICROSTEP16 HIGH,HIGH
-  #endif
-#else
-  #define MICROSTEP16 HIGH,HIGH
-#endif
-
 /**
  * Override here because this is set in Configuration_adv.h
  */
-#if ENABLED(ULTIPANEL) && DISABLED(ELB_FULL_GRAPHIC_CONTROLLER)
+#if HAS_LCD_MENU && DISABLED(ELB_FULL_GRAPHIC_CONTROLLER)
   #undef SD_DETECT_INVERTED
 #endif
 
@@ -301,12 +275,12 @@
 #elif TEMP_SENSOR_0 == -3
   #define HEATER_0_USES_MAX6675
   #define MAX6675_IS_MAX31855
-  #define MAX6675_TMIN -270
-  #define MAX6675_TMAX 1800
+  #define HEATER_0_MAX6675_TMIN -270
+  #define HEATER_0_MAX6675_TMAX 1800
 #elif TEMP_SENSOR_0 == -2
   #define HEATER_0_USES_MAX6675
-  #define MAX6675_TMIN 0
-  #define MAX6675_TMAX 1024
+  #define HEATER_0_MAX6675_TMIN 0
+  #define HEATER_0_MAX6675_TMAX 1024
 #elif TEMP_SENSOR_0 == -1
   #define HEATER_0_USES_AD595
 #elif TEMP_SENSOR_0 == 0
@@ -320,9 +294,19 @@
 #if TEMP_SENSOR_1 == -4
   #define HEATER_1_USES_AD8495
 #elif TEMP_SENSOR_1 == -3
-  #error "MAX31855 Thermocouples (-3) not supported for TEMP_SENSOR_1."
+  #if TEMP_SENSOR_0 == -2
+    #error "If MAX31855 Thermocouple (-3) is used for TEMP_SENSOR_1 then TEMP_SENSOR_0 must match."
+  #endif
+  #define HEATER_1_USES_MAX6675
+  #define HEATER_1_MAX6675_TMIN -270
+  #define HEATER_1_MAX6675_TMAX 1800
 #elif TEMP_SENSOR_1 == -2
-  #error "MAX6675 Thermocouples (-2) not supported for TEMP_SENSOR_1."
+  #if TEMP_SENSOR_0 == -3
+    #error "If MAX31855 Thermocouple (-3) is used for TEMP_SENSOR_0 then TEMP_SENSOR_1 must match."
+  #endif
+  #define HEATER_1_USES_MAX6675
+  #define HEATER_1_MAX6675_TMIN 0
+  #define HEATER_1_MAX6675_TMAX 1024
 #elif TEMP_SENSOR_1 == -1
   #define HEATER_1_USES_AD595
 #elif TEMP_SENSOR_1 == 0
@@ -460,6 +444,9 @@
  * NOTE: Driver timing order is longest-to-shortest duration.
  *       Preserve this ordering when adding new drivers.
  */
+
+#define TRINAMICS (HAS_TRINAMIC || HAS_DRIVER(TMC2130_STANDALONE) || HAS_DRIVER(TMC2208_STANDALONE) || HAS_DRIVER(TMC26X_STANDALONE) || HAS_DRIVER(TMC2660_STANDALONE) || HAS_DRIVER(TMC5130_STANDALONE) || HAS_DRIVER(TMC5160_STANDALONE) || HAS_DRIVER(TMC2160_STANDALONE))
+
 #ifndef MINIMUM_STEPPER_DIR_DELAY
   #if HAS_DRIVER(TB6560)
     #define MINIMUM_STEPPER_DIR_DELAY 15000
@@ -473,7 +460,7 @@
     #define MINIMUM_STEPPER_DIR_DELAY 400
   #elif HAS_DRIVER(A4988)
     #define MINIMUM_STEPPER_DIR_DELAY 200
-  #elif HAS_TRINAMIC || HAS_DRIVER(TMC2660) || HAS_DRIVER(TMC2130_STANDALONE) || HAS_DRIVER(TMC2208_STANDALONE) || HAS_DRIVER(TMC26X_STANDALONE) || HAS_DRIVER(TMC2660_STANDALONE)
+  #elif TRINAMICS
     #define MINIMUM_STEPPER_DIR_DELAY 20
   #else
     #define MINIMUM_STEPPER_DIR_DELAY 0   // Expect at least 10µS since one Stepper ISR must transpire
@@ -489,7 +476,7 @@
     #define MINIMUM_STEPPER_PULSE 2
   #elif HAS_DRIVER(A4988) || HAS_DRIVER(LV8729) || HAS_DRIVER(A5984)
     #define MINIMUM_STEPPER_PULSE 1
-  #elif HAS_TRINAMIC || HAS_DRIVER(TMC2660) || HAS_DRIVER(TMC2130_STANDALONE) || HAS_DRIVER(TMC2208_STANDALONE) || HAS_DRIVER(TMC26X_STANDALONE) || HAS_DRIVER(TMC2660_STANDALONE)
+  #elif TRINAMICS
     #define MINIMUM_STEPPER_PULSE 0
   #else
     #define MINIMUM_STEPPER_PULSE 2
@@ -505,7 +492,7 @@
     #define MAXIMUM_STEPPER_RATE 150000
   #elif HAS_DRIVER(DRV8825)
     #define MAXIMUM_STEPPER_RATE 250000
-  #elif HAS_TRINAMIC || HAS_DRIVER(TMC2660) || HAS_DRIVER(TMC2130_STANDALONE) || HAS_DRIVER(TMC2208_STANDALONE) || HAS_DRIVER(TMC26X_STANDALONE) || HAS_DRIVER(TMC2660_STANDALONE)
+  #elif TRINAMICS
     #define MAXIMUM_STEPPER_RATE 400000
   #elif HAS_DRIVER(A4988)
     #define MAXIMUM_STEPPER_RATE 500000
@@ -792,91 +779,96 @@
  */
 
 // Steppers
-#define HAS_X_ENABLE      (PIN_EXISTS(X_ENABLE))
+#define HAS_X_ENABLE      (PIN_EXISTS(X_ENABLE) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(X)))
 #define HAS_X_DIR         (PIN_EXISTS(X_DIR))
 #define HAS_X_STEP        (PIN_EXISTS(X_STEP))
 #define HAS_X_MICROSTEPS  (PIN_EXISTS(X_MS1))
 
-#define HAS_X2_ENABLE     (PIN_EXISTS(X2_ENABLE))
+#define HAS_X2_ENABLE     (PIN_EXISTS(X2_ENABLE) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(X2)))
 #define HAS_X2_DIR        (PIN_EXISTS(X2_DIR))
 #define HAS_X2_STEP       (PIN_EXISTS(X2_STEP))
 #define HAS_X2_MICROSTEPS (PIN_EXISTS(X2_MS1))
 
-#define HAS_Y_ENABLE      (PIN_EXISTS(Y_ENABLE))
+#define HAS_Y_ENABLE      (PIN_EXISTS(Y_ENABLE) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(Y)))
 #define HAS_Y_DIR         (PIN_EXISTS(Y_DIR))
 #define HAS_Y_STEP        (PIN_EXISTS(Y_STEP))
 #define HAS_Y_MICROSTEPS  (PIN_EXISTS(Y_MS1))
 
-#define HAS_Y2_ENABLE     (PIN_EXISTS(Y2_ENABLE))
+#define HAS_Y2_ENABLE     (PIN_EXISTS(Y2_ENABLE) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(Y2)))
 #define HAS_Y2_DIR        (PIN_EXISTS(Y2_DIR))
 #define HAS_Y2_STEP       (PIN_EXISTS(Y2_STEP))
 #define HAS_Y2_MICROSTEPS (PIN_EXISTS(Y2_MS1))
 
-#define HAS_Z_ENABLE      (PIN_EXISTS(Z_ENABLE))
+#define HAS_Z_ENABLE      (PIN_EXISTS(Z_ENABLE) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(Z)))
 #define HAS_Z_DIR         (PIN_EXISTS(Z_DIR))
 #define HAS_Z_STEP        (PIN_EXISTS(Z_STEP))
 #define HAS_Z_MICROSTEPS  (PIN_EXISTS(Z_MS1))
 
-#define HAS_Z2_ENABLE     (PIN_EXISTS(Z2_ENABLE))
+#define HAS_Z2_ENABLE     (PIN_EXISTS(Z2_ENABLE) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(Z2)))
 #define HAS_Z2_DIR        (PIN_EXISTS(Z2_DIR))
 #define HAS_Z2_STEP       (PIN_EXISTS(Z2_STEP))
 #define HAS_Z2_MICROSTEPS (PIN_EXISTS(Z2_MS1))
 
-#define HAS_Z3_ENABLE     (PIN_EXISTS(Z3_ENABLE))
+#define HAS_Z3_ENABLE     (PIN_EXISTS(Z3_ENABLE) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(Z3)))
 #define HAS_Z3_DIR        (PIN_EXISTS(Z3_DIR))
 #define HAS_Z3_STEP       (PIN_EXISTS(Z3_STEP))
+#define HAS_Z3_MICROSTEPS (PIN_EXISTS(Z3_MS1))
 
 // Extruder steppers and solenoids
-#define HAS_E0_ENABLE     (PIN_EXISTS(E0_ENABLE))
+#define HAS_E0_ENABLE     (PIN_EXISTS(E0_ENABLE) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(E0)))
 #define HAS_E0_DIR        (PIN_EXISTS(E0_DIR))
 #define HAS_E0_STEP       (PIN_EXISTS(E0_STEP))
 #define HAS_E0_MICROSTEPS (PIN_EXISTS(E0_MS1))
 #define HAS_SOLENOID_0    (PIN_EXISTS(SOL0))
 
-#define HAS_E1_ENABLE     (PIN_EXISTS(E1_ENABLE))
+#define HAS_E1_ENABLE     (PIN_EXISTS(E1_ENABLE) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(E1)))
 #define HAS_E1_DIR        (PIN_EXISTS(E1_DIR))
 #define HAS_E1_STEP       (PIN_EXISTS(E1_STEP))
 #define HAS_E1_MICROSTEPS (PIN_EXISTS(E1_MS1))
 #define HAS_SOLENOID_1    (PIN_EXISTS(SOL1))
 
-#define HAS_E2_ENABLE     (PIN_EXISTS(E2_ENABLE))
+#define HAS_E2_ENABLE     (PIN_EXISTS(E2_ENABLE) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(E2)))
 #define HAS_E2_DIR        (PIN_EXISTS(E2_DIR))
 #define HAS_E2_STEP       (PIN_EXISTS(E2_STEP))
 #define HAS_E2_MICROSTEPS (PIN_EXISTS(E2_MS1))
 #define HAS_SOLENOID_2    (PIN_EXISTS(SOL2))
 
-#define HAS_E3_ENABLE     (PIN_EXISTS(E3_ENABLE))
+#define HAS_E3_ENABLE     (PIN_EXISTS(E3_ENABLE) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(E3)))
 #define HAS_E3_DIR        (PIN_EXISTS(E3_DIR))
 #define HAS_E3_STEP       (PIN_EXISTS(E3_STEP))
 #define HAS_E3_MICROSTEPS (PIN_EXISTS(E3_MS1))
 #define HAS_SOLENOID_3    (PIN_EXISTS(SOL3))
 
-#define HAS_E4_ENABLE     (PIN_EXISTS(E4_ENABLE))
+#define HAS_E4_ENABLE     (PIN_EXISTS(E4_ENABLE) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(E4)))
 #define HAS_E4_DIR        (PIN_EXISTS(E4_DIR))
 #define HAS_E4_STEP       (PIN_EXISTS(E4_STEP))
 #define HAS_E4_MICROSTEPS (PIN_EXISTS(E4_MS1))
 #define HAS_SOLENOID_4    (PIN_EXISTS(SOL4))
 
-#define HAS_E5_ENABLE     (PIN_EXISTS(E5_ENABLE))
+#define HAS_E5_ENABLE     (PIN_EXISTS(E5_ENABLE) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(E5)))
 #define HAS_E5_DIR        (PIN_EXISTS(E5_DIR))
 #define HAS_E5_STEP       (PIN_EXISTS(E5_STEP))
 #define HAS_E5_MICROSTEPS (PIN_EXISTS(E5_MS1))
 #define HAS_SOLENOID_5    (PIN_EXISTS(SOL5))
 
 // Trinamic Stepper Drivers
-#define HAS_STEALTHCHOP (HAS_DRIVER(TMC2130) || HAS_DRIVER(TMC2208))
-#define HAS_STALLGUARD  HAS_DRIVER(TMC2130)
-#define AXIS_HAS_STEALTHCHOP(ST) ( AXIS_DRIVER_TYPE(ST, TMC2130) || AXIS_DRIVER_TYPE(ST, TMC2208) )
-#define AXIS_HAS_STALLGUARD(ST) AXIS_DRIVER_TYPE(ST, TMC2130)
+#if HAS_TRINAMIC
+  #define TMC_HAS_SPI     (HAS_DRIVER(TMC2130) || HAS_DRIVER(TMC2160) || HAS_DRIVER(TMC2660) || HAS_DRIVER(TMC5130) || HAS_DRIVER(TMC5160))
+  #define HAS_STALLGUARD  (HAS_DRIVER(TMC2130) || HAS_DRIVER(TMC2160) || HAS_DRIVER(TMC2660) || HAS_DRIVER(TMC5130) || HAS_DRIVER(TMC5160))
+  #define HAS_STEALTHCHOP (HAS_DRIVER(TMC2130) || HAS_DRIVER(TMC2160) || HAS_DRIVER(TMC2208) || HAS_DRIVER(TMC5130) || HAS_DRIVER(TMC5160))
+  #define AXIS_HAS_SPI(ST)         (AXIS_DRIVER_TYPE(ST, TMC2130) || AXIS_DRIVER_TYPE(ST, TMC2160) || AXIS_DRIVER_TYPE(ST, TMC2660))
+  #define AXIS_HAS_STALLGUARD(ST)  (AXIS_DRIVER_TYPE(ST, TMC2130) || AXIS_DRIVER_TYPE(ST, TMC2160) || AXIS_DRIVER_TYPE(ST, TMC2660) || AXIS_DRIVER_TYPE(ST, TMC5130) || AXIS_DRIVER_TYPE(ST, TMC5160))
+  #define AXIS_HAS_STEALTHCHOP(ST) (AXIS_DRIVER_TYPE(ST, TMC2130) || AXIS_DRIVER_TYPE(ST, TMC2160) || AXIS_DRIVER_TYPE(ST, TMC2208) || AXIS_DRIVER_TYPE(ST, TMC5130) || AXIS_DRIVER_TYPE(ST, TMC5160))
 
-#if ENABLED(SENSORLESS_HOMING)
+  #define STEALTHCHOP_ENABLED (ENABLED(STEALTHCHOP_XY) || ENABLED(STEALTHCHOP_Z) || ENABLED(STEALTHCHOP_E))
+  #define USE_SENSORLESS (ENABLED(SENSORLESS_HOMING) || ENABLED(SENSORLESS_PROBING))
   // Disable Z axis sensorless homing if a probe is used to home the Z axis
   #if HOMING_Z_WITH_PROBE
-    #undef Z_HOMING_SENSITIVITY
+    #undef Z_STALL_SENSITIVITY
   #endif
-  #define X_SENSORLESS (AXIS_HAS_STALLGUARD(X) && defined(X_HOMING_SENSITIVITY))
-  #define Y_SENSORLESS (AXIS_HAS_STALLGUARD(Y) && defined(Y_HOMING_SENSITIVITY))
-  #define Z_SENSORLESS (AXIS_HAS_STALLGUARD(Z) && defined(Z_HOMING_SENSITIVITY))
+  #define X_SENSORLESS (AXIS_HAS_STALLGUARD(X) && defined(X_STALL_SENSITIVITY))
+  #define Y_SENSORLESS (AXIS_HAS_STALLGUARD(Y) && defined(Y_STALL_SENSITIVITY))
+  #define Z_SENSORLESS (AXIS_HAS_STALLGUARD(Z) && defined(Z_STALL_SENSITIVITY))
 #endif
 
 // Endstops and bed probe
@@ -896,6 +888,7 @@
 #define HAS_Z3_MIN (PIN_EXISTS(Z3_MIN))
 #define HAS_Z3_MAX (PIN_EXISTS(Z3_MAX))
 #define HAS_Z_MIN_PROBE_PIN (PIN_EXISTS(Z_MIN_PROBE))
+#define HAS_CALIBRATION_PIN (PIN_EXISTS(CALIBRATION))
 
 // ADC Temp Sensors (Thermistor or Thermocouple with amplifier ADC interface)
 #define HAS_ADC_TEST(P) (PIN_EXISTS(TEMP_##P) && TEMP_SENSOR_##P != 0 && DISABLED(HEATER_##P##_USES_MAX6675))
@@ -983,6 +976,12 @@
   #define Z_PROBE_SERVO_NR -1
 #endif
 
+#define HAS_SERVO_ANGLES (ENABLED(SWITCHING_EXTRUDER) || ENABLED(SWITCHING_NOZZLE) || (HAS_Z_SERVO_PROBE && defined(Z_PROBE_SERVO_NR)))
+
+#if !HAS_SERVO_ANGLES
+  #undef EDITABLE_SERVO_ANGLES
+#endif
+
 // Sensors
 #define HAS_FILAMENT_WIDTH_SENSOR (PIN_EXISTS(FILWIDTH))
 
@@ -995,10 +994,62 @@
 #define HAS_CASE_LIGHT (PIN_EXISTS(CASE_LIGHT) && ENABLED(CASE_LIGHT_ENABLE))
 
 // Digital control
-#define HAS_MICROSTEPS (HAS_X_MICROSTEPS || HAS_Y_MICROSTEPS || HAS_Z_MICROSTEPS || HAS_E0_MICROSTEPS || HAS_E1_MICROSTEPS || HAS_E2_MICROSTEPS || HAS_E3_MICROSTEPS || HAS_E4_MICROSTEPS || HAS_E5_MICROSTEPS)
 #define HAS_STEPPER_RESET (PIN_EXISTS(STEPPER_RESET))
 #define HAS_DIGIPOTSS (PIN_EXISTS(DIGIPOTSS))
-#define HAS_MOTOR_CURRENT_PWM (PIN_EXISTS(MOTOR_CURRENT_PWM_XY) || PIN_EXISTS(MOTOR_CURRENT_PWM_Z) || PIN_EXISTS(MOTOR_CURRENT_PWM_E))
+#define HAS_MOTOR_CURRENT_PWM (PIN_EXISTS(MOTOR_CURRENT_PWM_X) || PIN_EXISTS(MOTOR_CURRENT_PWM_Y) || PIN_EXISTS(MOTOR_CURRENT_PWM_XY) || PIN_EXISTS(MOTOR_CURRENT_PWM_Z) || PIN_EXISTS(MOTOR_CURRENT_PWM_E))
+
+#define HAS_MICROSTEPS (HAS_X_MICROSTEPS || HAS_X2_MICROSTEPS || HAS_Y_MICROSTEPS || HAS_Y2_MICROSTEPS || HAS_Z_MICROSTEPS || HAS_Z2_MICROSTEPS || HAS_Z3_MICROSTEPS || HAS_E0_MICROSTEPS || HAS_E1_MICROSTEPS || HAS_E2_MICROSTEPS || HAS_E3_MICROSTEPS || HAS_E4_MICROSTEPS || HAS_E5_MICROSTEPS)
+
+#if HAS_MICROSTEPS
+
+  // MS1 MS2 MS3 Stepper Driver Microstepping mode table
+  #ifndef MICROSTEP1
+    #define MICROSTEP1 LOW,LOW,LOW
+  #endif
+  #if ENABLED(HEROIC_STEPPER_DRIVERS)
+    #ifndef MICROSTEP128
+      #define MICROSTEP128 LOW,HIGH,LOW
+    #endif
+  #else
+    #ifndef MICROSTEP2
+      #define MICROSTEP2 HIGH,LOW,LOW
+    #endif
+    #ifndef MICROSTEP4
+      #define MICROSTEP4 LOW,HIGH,LOW
+    #endif
+  #endif
+  #ifndef MICROSTEP8
+    #define MICROSTEP8 HIGH,HIGH,LOW
+  #endif
+  #ifdef __SAM3X8E__
+    #if MB(ALLIGATOR)
+      #ifndef MICROSTEP16
+        #define MICROSTEP16 LOW,LOW,LOW
+      #endif
+      #ifndef MICROSTEP32
+        #define MICROSTEP32 HIGH,HIGH,LOW
+      #endif
+    #else
+      #ifndef MICROSTEP16
+        #define MICROSTEP16 HIGH,HIGH,LOW
+      #endif
+    #endif
+  #else
+    #ifndef MICROSTEP16
+      #define MICROSTEP16 HIGH,HIGH,LOW
+    #endif
+  #endif
+
+  #define HAS_MICROSTEP1 defined(MICROSTEP1)
+  #define HAS_MICROSTEP2 defined(MICROSTEP2)
+  #define HAS_MICROSTEP4 defined(MICROSTEP4)
+  #define HAS_MICROSTEP8 defined(MICROSTEP8)
+  #define HAS_MICROSTEP16 defined(MICROSTEP16)
+  #define HAS_MICROSTEP32 defined(MICROSTEP32)
+  #define HAS_MICROSTEP64 defined(MICROSTEP64)
+  #define HAS_MICROSTEP128 defined(MICROSTEP128)
+
+#endif // HAS_MICROSTEPS
 
 #if !HAS_TEMP_SENSOR
   #undef AUTO_REPORT_TEMPERATURES
@@ -1165,34 +1216,28 @@
   #define _SKEW_FACTOR(a,b,c) _SKEW_SIDE(float(a),_GET_SIDE(float(a),float(b),float(c)),float(c))
 
   #ifndef XY_SKEW_FACTOR
-    constexpr float XY_SKEW_FACTOR = (
-      #if defined(XY_DIAG_AC) && defined(XY_DIAG_BD) && defined(XY_SIDE_AD)
-        _SKEW_FACTOR(XY_DIAG_AC, XY_DIAG_BD, XY_SIDE_AD)
-      #else
-        0.0
-      #endif
-    );
+    #if defined(XY_DIAG_AC) && defined(XY_DIAG_BD) && defined(XY_SIDE_AD)
+      #define XY_SKEW_FACTOR _SKEW_FACTOR(XY_DIAG_AC, XY_DIAG_BD, XY_SIDE_AD)
+    #else
+      #define XY_SKEW_FACTOR 0.0
+    #endif
   #endif
   #ifndef XZ_SKEW_FACTOR
     #if defined(XY_SIDE_AD) && !defined(XZ_SIDE_AD)
       #define XZ_SIDE_AD XY_SIDE_AD
     #endif
-    constexpr float XZ_SKEW_FACTOR = (
-      #if defined(XZ_DIAG_AC) && defined(XZ_DIAG_BD) && defined(XZ_SIDE_AD)
-        _SKEW_FACTOR(XZ_DIAG_AC, XZ_DIAG_BD, XZ_SIDE_AD)
-      #else
-        0.0
-      #endif
-    );
+    #if defined(XZ_DIAG_AC) && defined(XZ_DIAG_BD) && defined(XZ_SIDE_AD)
+      #define XZ_SKEW_FACTOR _SKEW_FACTOR(XZ_DIAG_AC, XZ_DIAG_BD, XZ_SIDE_AD)
+    #else
+      #define XZ_SKEW_FACTOR 0.0
+    #endif
   #endif
   #ifndef YZ_SKEW_FACTOR
-    constexpr float YZ_SKEW_FACTOR = (
-      #if defined(YZ_DIAG_AC) && defined(YZ_DIAG_BD) && defined(YZ_SIDE_AD)
-        _SKEW_FACTOR(YZ_DIAG_AC, YZ_DIAG_BD, YZ_SIDE_AD)
-      #else
-        0.0
-      #endif
-    );
+    #if defined(YZ_DIAG_AC) && defined(YZ_DIAG_BD) && defined(YZ_SIDE_AD)
+      #define YZ_SKEW_FACTOR _SKEW_FACTOR(YZ_DIAG_AC, YZ_DIAG_BD, YZ_SIDE_AD)
+    #else
+      #define YZ_SKEW_FACTOR 0.0
+    #endif
   #endif
 #endif // SKEW_CORRECTION
 
@@ -1216,16 +1261,23 @@
 #endif
 
 /**
- * Heater & Fan Pausing
+ * Heater, Fan, and Probe interactions
  */
 #if FAN_COUNT == 0
   #undef PROBING_FANS_OFF
+  #undef ADAPTIVE_FAN_SLOWING
+  #undef NO_FAN_SLOWING_IN_PID_TUNING
 #endif
+
 #define QUIET_PROBING (HAS_BED_PROBE && (ENABLED(PROBING_HEATERS_OFF) || ENABLED(PROBING_FANS_OFF) || DELAY_BEFORE_PROBING > 0))
 #define HEATER_IDLE_HANDLER (ENABLED(ADVANCED_PAUSE_FEATURE) || ENABLED(PROBING_HEATERS_OFF))
 
 #if ENABLED(ADVANCED_PAUSE_FEATURE) && !defined(FILAMENT_CHANGE_SLOW_LOAD_LENGTH)
   #define FILAMENT_CHANGE_SLOW_LOAD_LENGTH 0
+#endif
+
+#if EXTRUDERS > 1 && !defined(TOOLCHANGE_FIL_EXTRA_PRIME)
+  #define TOOLCHANGE_FIL_EXTRA_PRIME 0
 #endif
 
 /**
@@ -1254,7 +1306,7 @@
   #define _PROBE_RADIUS (DELTA_PRINTABLE_RADIUS - (MIN_PROBE_EDGE))
   #ifndef DELTA_CALIBRATION_RADIUS
     #ifdef X_PROBE_OFFSET_FROM_EXTRUDER
-      #define DELTA_CALIBRATION_RADIUS (DELTA_PRINTABLE_RADIUS - MAX3(abs(X_PROBE_OFFSET_FROM_EXTRUDER), abs(Y_PROBE_OFFSET_FROM_EXTRUDER), abs(MIN_PROBE_EDGE)))
+      #define DELTA_CALIBRATION_RADIUS (DELTA_PRINTABLE_RADIUS - MAX(ABS(X_PROBE_OFFSET_FROM_EXTRUDER), ABS(Y_PROBE_OFFSET_FROM_EXTRUDER), ABS(MIN_PROBE_EDGE)))
     #else
       #define DELTA_CALIBRATION_RADIUS _PROBE_RADIUS
     #endif
@@ -1488,19 +1540,18 @@
 // Updated G92 behavior shifts the workspace
 #define HAS_POSITION_SHIFT DISABLED(NO_WORKSPACE_OFFSETS)
 // The home offset also shifts the coordinate space
-#define HAS_HOME_OFFSET (DISABLED(NO_WORKSPACE_OFFSETS) && DISABLED(DELTA))
-// Either offset yields extra calculations on all moves
-#define HAS_WORKSPACE_OFFSET (HAS_POSITION_SHIFT || HAS_HOME_OFFSET)
-// M206 doesn't apply to DELTA
-#define HAS_M206_COMMAND (HAS_HOME_OFFSET && DISABLED(DELTA))
+#define HAS_HOME_OFFSET (DISABLED(NO_WORKSPACE_OFFSETS) && IS_CARTESIAN)
+// The SCARA home offset applies only on G28
+#define HAS_SCARA_OFFSET (DISABLED(NO_WORKSPACE_OFFSETS) && IS_SCARA)
+// Cumulative offset to workspace to save some calculation
+#define HAS_WORKSPACE_OFFSET (HAS_POSITION_SHIFT && HAS_HOME_OFFSET)
+// M206 sets the home offset for Cartesian machines
+#define HAS_M206_COMMAND (HAS_HOME_OFFSET && !IS_SCARA)
 
 // LCD timeout to status screen default is 15s
 #ifndef LCD_TIMEOUT_TO_STATUS
   #define LCD_TIMEOUT_TO_STATUS 15000
 #endif
-
-// Shorthand
-#define GRID_MAX_POINTS ((GRID_MAX_POINTS_X) * (GRID_MAX_POINTS_Y))
 
 // Add commands that need sub-codes to this list
 #define USE_GCODE_SUBCODES ENABLED(G38_PROBE_TARGET) || ENABLED(CNC_COORDINATE_SYSTEMS) || ENABLED(POWER_LOSS_RECOVERY)
@@ -1587,8 +1638,32 @@
 // If platform requires early initialization of watchdog to properly boot
 #define EARLY_WATCHDOG (ENABLED(USE_WATCHDOG) && defined(ARDUINO_ARCH_SAM))
 
-#if ENABLED(G29_RETRY_AND_RECOVER)
-  #define USE_EXECUTE_COMMANDS_IMMEDIATE
+#define USE_EXECUTE_COMMANDS_IMMEDIATE (ENABLED(G29_RETRY_AND_RECOVER) || ENABLED(GCODE_MACROS) || ENABLED(POWER_LOSS_RECOVERY) || HAS_DRIVER(L6470))
+
+#if ENABLED(Z_TRIPLE_STEPPER_DRIVERS)
+  #define Z_STEPPER_COUNT 3
+#elif ENABLED(Z_DUAL_STEPPER_DRIVERS)
+  #define Z_STEPPER_COUNT 2
+#else
+  #define Z_STEPPER_COUNT 1
 #endif
 
-#endif // CONDITIONALS_POST_H
+// Get LCD character width/height, which may be overridden by pins, configs, etc.
+#ifndef LCD_WIDTH
+  #if HAS_GRAPHICAL_LCD
+    #define LCD_WIDTH 22
+  #elif ENABLED(ULTIPANEL)
+    #define LCD_WIDTH 20
+  #elif HAS_SPI_LCD
+    #define LCD_WIDTH 16
+  #endif
+#endif
+#ifndef LCD_HEIGHT
+  #if HAS_GRAPHICAL_LCD
+    #define LCD_HEIGHT 5
+  #elif ENABLED(ULTIPANEL)
+    #define LCD_HEIGHT 4
+  #elif HAS_SPI_LCD
+    #define LCD_HEIGHT 2
+  #endif
+#endif

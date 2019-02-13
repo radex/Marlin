@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (C) 2016 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
@@ -22,7 +22,7 @@
 
 #include "../../../inc/MarlinConfig.h"
 
-#if ENABLED(TMC_DEBUG)
+#if HAS_TRINAMIC
 
 #include "../../gcode.h"
 #include "../../../feature/tmc_util.h"
@@ -31,10 +31,25 @@
  * M122: Debug TMC drivers
  */
 void GcodeSuite::M122() {
-  if (parser.seen('S'))
-    tmc_set_report_status(parser.value_bool());
-  else
-    tmc_report_all();
+  bool print_axis[XYZE] = { false, false, false, false },
+       print_all = true;
+  LOOP_XYZE(i) if (parser.seen(axis_codes[i])) { print_axis[i] = true; print_all = false; }
+
+  if (print_all) LOOP_XYZE(i) print_axis[i] = true;
+
+  #if ENABLED(TMC_DEBUG)
+    #if ENABLED(MONITOR_DRIVER_STATUS)
+      if (parser.seen('S'))
+        tmc_set_report_status(parser.value_bool());
+    #endif
+
+    if (parser.seen('V'))
+      tmc_get_registers(print_axis[X_AXIS], print_axis[Y_AXIS], print_axis[Z_AXIS], print_axis[E_AXIS]);
+    else
+      tmc_report_all(print_axis[X_AXIS], print_axis[Y_AXIS], print_axis[Z_AXIS], print_axis[E_AXIS]);
+  #endif
+
+  test_tmc_connection(print_axis[X_AXIS], print_axis[Y_AXIS], print_axis[Z_AXIS], print_axis[E_AXIS]);
 }
 
-#endif // TMC_DEBUG
+#endif // HAS_TRINAMIC

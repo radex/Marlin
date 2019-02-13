@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (C) 2016 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
@@ -103,8 +103,7 @@ void dac_current_set_percents(const uint8_t pct[XYZE]) {
 void dac_print_values() {
   if (!dac_present) return;
 
-  SERIAL_ECHO_START();
-  SERIAL_ECHOLNPGM("Stepper current values in % (Amps):");
+  SERIAL_ECHO_MSG("Stepper current values in % (Amps):");
   SERIAL_ECHO_START();
   SERIAL_ECHOPAIR(" X:",  dac_perc(X_AXIS));
   SERIAL_ECHOPAIR(" (",   dac_amps(X_AXIS));

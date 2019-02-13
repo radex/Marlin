@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (C) 2016 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
@@ -24,29 +24,48 @@
  * Arduino Mega with RAMPS v1.4 for Anycubic
  */
 
-#ifndef BOARD_NAME
-  #define BOARD_NAME "Anycubic RAMPS 1.4"
+#define BOARD_NAME "Anycubic RAMPS 1.4"
+
+// Labeled pins
+#define TRIGORILLA_HEATER_BED_PIN  8
+#define TRIGORILLA_HEATER_0_PIN   10
+#define TRIGORILLA_HEATER_1_PIN   45   // Anycubic Kossel: Unused
+
+#define TRIGORILLA_FAN0_PIN        9   // Anycubic Kossel: Usually the part cooling fan
+#define TRIGORILLA_FAN1_PIN        7   // Anycubic Kossel: Unused
+#define TRIGORILLA_FAN2_PIN       44   // Anycubic Kossel: Hotend fan
+
+// Remap MOSFET pins to common usages:
+
+#define RAMPS_D10_PIN    TRIGORILLA_HEATER_0_PIN // HEATER_0_PIN is always RAMPS_D10_PIN in pins_RAMPS.h
+
+#if HOTENDS > 1   // EEF and EEB
+  #define RAMPS_D9_PIN   TRIGORILLA_HEATER_1_PIN
+  #if !TEMP_SENSOR_BED
+    // EEF
+    #define RAMPS_D8_PIN TRIGORILLA_FAN0_PIN
+  #else
+    // EEB
+    #define RAMPS_D8_PIN TRIGORILLA_HEATER_BED_PIN
+    #define FAN_PIN      TRIGORILLA_FAN0_PIN    // Override pin 4 in pins_RAMPS.h
+  #endif
+#elif TEMP_SENSOR_BED
+  // EFB (Anycubic Kossel default)
+  #define RAMPS_D9_PIN   TRIGORILLA_FAN0_PIN
+  #define RAMPS_D8_PIN   TRIGORILLA_HEATER_BED_PIN
+#else
+  // EFF
+  #define RAMPS_D9_PIN   TRIGORILLA_FAN1_PIN
+  #define RAMPS_D8_PIN   TRIGORILLA_FAN0_PIN
 #endif
 
-#define IS_RAMPS_EFB
-
-// FAN0 / D9  - Typically used for the part fan on Anycubic Delta devices
-#define FAN_PIN 9
-
-// FAN1 / D7  - Typically unused, can be allocated as Case Fan
-
-// FAN2 / D44 - Typical Extruder Fan on Anycubic Delta devices
-#define FAN2_PIN              44
-#define ORIG_E0_AUTO_FAN_PIN  44
+#if HOTENDS > 1 || TEMP_SENSOR_BED      // EEF, EEB, EFB
+  #define FAN1_PIN       TRIGORILLA_FAN1_PIN
+#endif
+#define FAN2_PIN         TRIGORILLA_FAN2_PIN
+#define ORIG_E0_AUTO_FAN_PIN TRIGORILLA_FAN2_PIN  // Used in Anycubic Kossel example config
 
 #include "pins_RAMPS.h"
-
-// TODO 1.4 boards do have an E1 stepper driver. However the pin definitions
-// from pins_RAMPS.h are incorrect for this board. e.g., Pin 44 is the Extruder fan.
-#undef E1_STEP_PIN
-#undef E1_DIR_PIN
-#undef E1_ENABLE_PIN
-#undef E1_CS_PIN
 
 //
 // AnyCubic made the following changes to 1.1.0-RC8

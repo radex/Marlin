@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (C) 2016 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
@@ -19,15 +19,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+#pragma once
 
 /**
  * Fast I/O Routines for AVR
  * Use direct port manipulation to save scads of processor time.
  * Contributed by Triffid_Hunter and modified by Kliment, thinkyhead, Bob-the-Kuhn, et.al.
  */
-
-#ifndef _FASTIO_ARDUINO_H_
-#define _FASTIO_ARDUINO_H_
 
 #include <avr/io.h>
 #include "../../core/macros.h"
@@ -312,5 +310,3 @@ enum ClockSource2 : char {
 
 // finally - the macro that tells us if a pin is an available hardware PWM
 #define USEABLE_HARDWARE_PWM(p) (PWM_PINS(p) && !PWM_CHK(p))
-
-#endif // _FASTIO_ARDUINO_H_

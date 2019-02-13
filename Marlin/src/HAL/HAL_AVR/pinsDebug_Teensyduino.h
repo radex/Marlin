@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (C) 2017 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
@@ -19,9 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
-#ifndef _PINSDEBUG_TEENSYSUINO_H_
-#define _PINSDEBUG_TEENSYSUINO_H_
+#pragma once
 
 //
 //  some of the pin mapping functions of the Teensduino extension to the Arduino IDE
@@ -111,5 +109,3 @@ const uint8_t PROGMEM digital_pin_to_port_PGM[] = {
                                              // disable the PWMs so we can use it as is
 
 // portModeRegister(pin) is OK
-
-#endif // _PINSDEBUG_TEENSYSUINO_H_

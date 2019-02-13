@@ -120,18 +120,18 @@ static uint8_t buffer[256] = {0},   // The RAM buffer to accumulate writes
     const uint8_t* c = (const uint8_t*) data;
     char buffer[80];
 
-    sprintf(buffer, "Page: %d (0x%04x)\n", page, page);
-    SERIAL_PROTOCOL(buffer);
+    sprintf_P(buffer, PSTR("Page: %d (0x%04x)\n"), page, page);
+    SERIAL_ECHO(buffer);
 
     char* p = &buffer[0];
     for (int i = 0; i< PageSize; ++i) {
-      if ((i & 0xF) == 0) p += sprintf(p,"%04x] ", i);
+      if ((i & 0xF) == 0) p += sprintf_P(p, PSTR("%04x] "), i);
 
-      p += sprintf(p," %02x", c[i]);
+      p += sprintf_P(p, PSTR(" %02x"), c[i]);
       if ((i & 0xF) == 0xF) {
         *p++ = '\n';
         *p = 0;
-        SERIAL_PROTOCOL(buffer);
+        SERIAL_ECHO(buffer);
         p = &buffer[0];
       }
     }
@@ -578,7 +578,7 @@ static uint32_t ee_GetAddrRange(uint32_t address, bool excludeRAMBuffer = false)
 static bool ee_IsPageClean(int page) {
   uint32_t* pflash = (uint32_t*) getFlashStorage(page);
   for (uint16_t i = 0; i < (PageSize >> 2); ++i)
-    if (*pflash++ != 0xFFFFFFFF) eturn false;
+    if (*pflash++ != 0xFFFFFFFF) return false;
   return true;
 }
 
@@ -815,7 +815,7 @@ static bool ee_Write(uint32_t address, uint8_t data) {
           //  Maybe we could coalesce the next block with this block. Let's try to do it!
           uint16_t inext = i + 3 + blen;
           if (inext <= (PageSize - 4) &&
-            (buffer[inext] | (uint16_t(buffer[inext + 1]) << 8)) == (baddr + blen + 1)) {
+            (buffer[inext] | uint16_t(buffer[inext + 1] << 8)) == (baddr + blen + 1)) {
             // YES! ... we can coalesce blocks! . Do it!
 
             // Adjust this block header to include the next one

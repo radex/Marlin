@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (C) 2016 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (C) 2019 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
@@ -28,11 +28,11 @@
 #endif
 
 #if ENABLED(EXTENDED_CAPABILITIES_REPORT)
-  static void cap_line(const char * const name, bool ena=false) {
-    SERIAL_PROTOCOLPGM("Cap:");
+  static void cap_line(PGM_P const name, bool ena=false) {
+    SERIAL_ECHOPGM("Cap:");
     serialprintPGM(name);
     SERIAL_CHAR(':');
-    SERIAL_PROTOCOLLN(int(ena ? 1 : 0));
+    SERIAL_ECHOLN(int(ena ? 1 : 0));
   }
 #endif
 
@@ -47,7 +47,7 @@ void GcodeSuite::M115() {
     #define CAPLINE(STR,...) cap_line(PSTR(STR), __VA_ARGS__)
   #endif
 
-  SERIAL_PROTOCOLLNPGM_P(port, MSG_M115_REPORT);
+  SERIAL_ECHOLNPGM_P(port, MSG_M115_REPORT);
 
   #if ENABLED(EXTENDED_CAPABILITIES_REPORT)
 
@@ -132,9 +132,16 @@ void GcodeSuite::M115() {
       #endif
     );
 
-    // EMERGENCY_PARSER (M108, M112, M410)
+    // EMERGENCY_PARSER (M108, M112, M410, M876)
     cap_line(PSTR("EMERGENCY_PARSER")
       #if ENABLED(EMERGENCY_PARSER)
+        , true
+      #endif
+    );
+
+    // PROMPT SUPPORT (M876)
+    cap_line(PSTR("PROMPT_SUPPORT")
+      #if ENABLED(HOST_PROMPT_SUPPORT)
         , true
       #endif
     );
@@ -149,6 +156,13 @@ void GcodeSuite::M115() {
     // THERMAL_PROTECTION
     cap_line(PSTR("THERMAL_PROTECTION")
       #if ENABLED(THERMAL_PROTECTION_HOTENDS) && ENABLED(THERMAL_PROTECTION_BED)
+        , true
+      #endif
+    );
+
+    // MOTION_MODES (M80-M89)
+    cap_line(PSTR("MOTION_MODES")
+      #if ENABLED(GCODE_MOTION_MODES)
         , true
       #endif
     );
