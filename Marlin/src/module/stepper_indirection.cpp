@@ -248,47 +248,6 @@
 //
 #if HAS_DRIVER(TMC2160)
 
-<<<<<<< HEAD
-  void tmc2130_init_to_defaults() {
-    #if AXIS_DRIVER_TYPE(X, TMC2130)
-      _TMC2130_INIT( X, planner.axis_steps_per_mm[X_AXIS]);
-    #endif
-    #if AXIS_DRIVER_TYPE(X2, TMC2130)
-      _TMC2130_INIT(X2, planner.axis_steps_per_mm[X_AXIS]);
-    #endif
-    #if AXIS_DRIVER_TYPE(Y, TMC2130)
-      _TMC2130_INIT( Y, planner.axis_steps_per_mm[Y_AXIS]);
-    #endif
-    #if AXIS_DRIVER_TYPE(Y2, TMC2130)
-      _TMC2130_INIT(Y2, planner.axis_steps_per_mm[Y_AXIS]);
-    #endif
-    #if AXIS_DRIVER_TYPE(Z, TMC2130)
-      _TMC2130_INIT( Z, planner.axis_steps_per_mm[Z_AXIS]);
-    #endif
-    #if AXIS_DRIVER_TYPE(Z2, TMC2130)
-      _TMC2130_INIT(Z2, planner.axis_steps_per_mm[Z_AXIS]);
-    #endif
-    #if AXIS_DRIVER_TYPE(Z3, TMC2130)
-      _TMC2130_INIT(Z3, planner.axis_steps_per_mm[Z_AXIS]);
-    #endif
-    #if AXIS_DRIVER_TYPE(E0, TMC2130)
-      _TMC2130_INIT(E0, planner.axis_steps_per_mm[E_AXIS]);
-    #endif
-    #if AXIS_DRIVER_TYPE(E1, TMC2130)
-      { constexpr uint8_t extruder = 1; _TMC2130_INIT(E1, planner.axis_steps_per_mm[E_AXIS_N]); UNUSED(extruder); }
-    #endif
-    #if AXIS_DRIVER_TYPE(E2, TMC2130)
-      { constexpr uint8_t extruder = 2; _TMC2130_INIT(E2, planner.axis_steps_per_mm[E_AXIS_N]); UNUSED(extruder); }
-    #endif
-    #if AXIS_DRIVER_TYPE(E3, TMC2130)
-      { constexpr uint8_t extruder = 3; _TMC2130_INIT(E3, planner.axis_steps_per_mm[E_AXIS_N]); UNUSED(extruder); }
-    #endif
-    #if AXIS_DRIVER_TYPE(E4, TMC2130)
-      { constexpr uint8_t extruder = 4; _TMC2130_INIT(E4, planner.axis_steps_per_mm[E_AXIS_N]); UNUSED(extruder); }
-    #endif
-    #if AXIS_DRIVER_TYPE(E5, TMC2130)
-      { constexpr uint8_t extruder = 5; _TMC2130_INIT(E5, planner.axis_steps_per_mm[E_AXIS_N]); UNUSED(extruder); }
-=======
   #include <SPI.h>
   #include "planner.h"
   #include "../core/enum.h"
@@ -366,7 +325,6 @@
       coolconf.semin = INCREASE_CURRENT_THRS;
       coolconf.semax = REDUCE_CURRENT_THRS;
       st.COOLCONF(coolconf.sr);
->>>>>>> 7cf9b93f26f728f0104dc9b930f6b23096639d98
     #endif
 
     st.en_pwm_mode(stealth);
@@ -900,13 +858,7 @@
       UNUSED(thrs);
       UNUSED(spmm);
     #endif
-<<<<<<< HEAD
-    #if AXIS_DRIVER_TYPE(E5, TMC2208)
-      { constexpr int extruder = 5; _TMC2208_INIT(E5, planner.axis_steps_per_mm[E_AXIS_N]); }
-    #endif
-=======
     st.GSTAT(); // Clear GSTAT
->>>>>>> 7cf9b93f26f728f0104dc9b930f6b23096639d98
   }
 #endif // TMC5160
 
