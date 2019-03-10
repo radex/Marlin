@@ -1389,8 +1389,8 @@
  */
 #if HAS_TRINAMIC
 
-  #define HOLD_MULTIPLIER    0.5  // Scales down the holding current from run current
-  #define INTERPOLATE       true  // Interpolate X/Y/Z_MICROSTEPS to 256
+  #define HOLD_MULTIPLIER    0.2  // Scales down the holding current from run current
+  #define INTERPOLATE       false  // Interpolate X/Y/Z_MICROSTEPS to 256
 
   #if AXIS_IS_TMC(X)
     #define X_CURRENT     800  // (mA) RMS current. Multiply by 1.414 for peak current.
@@ -1405,8 +1405,8 @@
   #endif
 
   #if AXIS_IS_TMC(Y)
-    #define Y_CURRENT     800
-    #define Y_MICROSTEPS   16
+    #define Y_CURRENT     500
+    #define Y_MICROSTEPS  256
     #define Y_RSENSE     0.11
   #endif
 
