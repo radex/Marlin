@@ -1389,8 +1389,8 @@
  */
 #if HAS_TRINAMIC
 
-  #define HOLD_MULTIPLIER    0.2  // Scales down the holding current from run current
-  #define INTERPOLATE       false  // Interpolate X/Y/Z_MICROSTEPS to 256
+  #define HOLD_MULTIPLIER    0.5  // Scales down the holding current from run current
+  #define INTERPOLATE       true  // Interpolate X/Y/Z_MICROSTEPS to 256
 
   #if AXIS_IS_TMC(X)
     #define X_CURRENT     800  // (mA) RMS current. Multiply by 1.414 for peak current.
@@ -1406,7 +1406,7 @@
 
   #if AXIS_IS_TMC(Y)
     #define Y_CURRENT     500
-    #define Y_MICROSTEPS  256
+    #define Y_MICROSTEPS  32
     #define Y_RSENSE     0.11
   #endif
 
@@ -1494,7 +1494,7 @@
    * The default SW SPI pins are defined the respective pins files,
    * but you can override or define them here.
    */
-  //#define TMC_USE_SW_SPI
+  #define TMC_USE_SW_SPI
   //#define TMC_SW_MOSI       -1
   //#define TMC_SW_MISO       -1
   //#define TMC_SW_SCK        -1
@@ -1607,7 +1607,7 @@
    * Enable M122 debugging command for TMC stepper drivers.
    * M122 S0/1 will enable continous reporting.
    */
-  //#define TMC_DEBUG
+  #define TMC_DEBUG
 
   /**
    * You can set your own advanced settings by filling in predefined functions.

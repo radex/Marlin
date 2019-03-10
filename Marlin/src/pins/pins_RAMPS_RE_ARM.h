@@ -101,9 +101,9 @@
 // Software SPI pins for TMC2130 stepper drivers
 //
 #if ENABLED(TMC_USE_SW_SPI)
-  #define TMC_SW_MOSI      P1_00   // ETH
-  #define TMC_SW_MISO      P1_08   // ETH
-  #define TMC_SW_SCK       P1_09   // ETH
+  #define TMC_SW_MOSI      P0_18 //P1_00   // ETH
+  #define TMC_SW_MISO      P0_17 // P1_08   // ETH
+  #define TMC_SW_SCK       P0_15 // P1_09   // ETH
 #endif
 
 //
