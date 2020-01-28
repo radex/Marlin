@@ -1,7 +1,8 @@
 # radex: note to self
 
-- vscode -> platformio -> env:LPC1768 -> build
-- put as FIRMWARE.CUR onto REARM SD card
+- vscode -> platformio -> env:LPC1768 -> UPLOAD (this will put it on sd card if mounted)
+- if doesnt work, put .pioenvs/LPC1768/firmware.bin as firmware.bin onto REARM SD card
+- after being accepted by rearm, it should get renamed to FIRMWARE.CUR
 
 # Marlin 3D Printer Firmware
 
