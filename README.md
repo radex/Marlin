@@ -1,3 +1,8 @@
+# radex: note to self
+
+- vscode -> platformio -> env:LPC1768 -> build
+- put as FIRMWARE.CUR onto REARM SD card
+
 # Marlin 3D Printer Firmware
 
 [![Build Status](https://travis-ci.org/MarlinFirmware/Marlin.svg?branch=RCBugFix)](https://travis-ci.org/MarlinFirmware/Marlin)
